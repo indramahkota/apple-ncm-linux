@@ -1,0 +1,33 @@
+name: Safety and Linux build
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install build and lint tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential linux-headers-generic shellcheck
+      - name: Check shell scripts
+        run: |
+          for script in install.sh uninstall.sh; do bash -n "$script"; done
+          shellcheck install.sh uninstall.sh
+      - name: Test safety boundaries with mocked system commands
+        run: python3 -m unittest discover -s tests -v
+      - name: Compile against Ubuntu GA kernel headers
+        shell: bash
+        run: |
+          headers=$(find /usr/src -maxdepth 1 -type d -name 'linux-headers-*-generic' | sort -V | tail -n 1)
+          test -n "$headers"
+          make KDIR="$headers"
+          modinfo ./cdc_ncm.ko

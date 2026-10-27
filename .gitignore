@@ -1,0 +1,63 @@
+*.o
+*.ko
+*.mod.c
+*.mod
+*.symvers
+*.order
+.*.cmd
+.*.d
+*.d
+.tmp_versions/
+
+# Local configuration, credentials and signing material
+/.local/
+# Store only filename patterns here; never paste actual credentials into this file.
+# Ignore rules do not remove files already tracked by Git or erase their history.
+.env
+.env.*
+!.env.example
+.envrc
+.secrets/
+secrets/
+.credentials/
+credentials/
+.ssh/
+.gnupg/
+.aws/
+id_rsa
+id_ecdsa
+id_ed25519
+id_dsa
+*.pem
+*.key
+*.p12
+*.pfx
+*.der
+*.crt
+*.p8
+*.jks
+*.keystore
+*.kdbx
+*private*.asc
+*secret*.asc
+[Mm][Oo][Kk].*
+*.local.yaml
+*.local.yml
+*.local.json
+*.local.toml
+*.local.conf
+*.log
+
+# Device captures and diagnostic dumps may contain personal identifiers or traffic.
+*.pcap
+*.pcapng
+*.har
+*.dump
+*.core
+lsusb*.txt
+ioreg*.txt
+usb-descriptors*.txt
+
+# Generated Python files
+__pycache__/
+*.pyc
