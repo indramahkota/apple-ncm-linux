@@ -38,6 +38,12 @@
  * SUCH DAMAGE.
  */
 
+/*
+ * Modified 2026-10-27 by Indra Mahkota (based on Linux v6.8): optional
+ * status endpoint and Apple 05ac:1905/1902 support. Modifications and
+ * this modified version are GPL-2.0-only.
+ */
+
 #include <linux/module.h>
 #include <linux/netdevice.h>
 #include <linux/ctype.h>
@@ -2102,4 +2108,4 @@ module_usb_driver(cdc_ncm_driver);
 
 MODULE_AUTHOR("Hans Petter Selasky");
 MODULE_DESCRIPTION("USB CDC NCM host driver");
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
