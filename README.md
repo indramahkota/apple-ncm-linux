@@ -37,11 +37,10 @@ Jika Mac terdeteksi tetapi interface USB tidak muncul dengan pesan `bind() failu
 
 ## Build dan instalasi
 
-Unduh repository dan buka terminal di foldernya pada Ubuntu. Pasang dependensi build, lalu build sebagai pengguna biasa:
+Unduh repository dan buka terminal di foldernya pada Ubuntu, lalu pasang dependensi build:
 
 ```bash
-sudo apt install build-essential linux-headers-$(uname -r) kmod mokutil
-make
+sudo apt install build-essential dkms linux-headers-$(uname -r) kmod mokutil
 ```
 
 Pada sistem EFI, periksa status Secure Boot:
@@ -50,19 +49,23 @@ Pada sistem EFI, periksa status Secure Boot:
 mokutil --sb-state
 ```
 
-Jika Secure Boot aktif, lakukan signing dan daftarkan key melalui MOK sesuai [panduan Ubuntu](https://documentation.ubuntu.com/security/security-features/platform-protections/secure-boot/) sebelum memasang modul. Simpan private key di luar repository.
+Jika Secure Boot aktif, DKMS menandatangani modul dengan key MOK miliknya. Kernel hanya memuat modul tersebut setelah key didaftarkan sesuai [panduan Ubuntu](https://documentation.ubuntu.com/security/security-features/platform-protections/secure-boot/).
 
-Pasang modul:
+Pasang modul melalui DKMS. Source disalin ke `/usr/src/apple-ncm-<versi>`, lalu modul di-build untuk kernel yang sedang berjalan dan otomatis di-build ulang setiap kali kernel baru terpasang:
 
 ```bash
 sudo make install
 ```
 
-Jika installer menolak modul pengganti yang sudah ada, periksa asalnya sebelum menghapus atau menggantinya. Jika driver dimuat melalui initramfs, perbarui initramfs sesuai panduan distribusi. Simpan pekerjaan, lalu restart dari terminal lokal atau koneksi lain yang dapat digunakan kembali setelah restart:
+Installer juga memperbarui initramfs, karena initramfs Ubuntu menyimpan salinan `cdc_ncm` bawaan yang dimuat saat boot sebelum modul di `/lib/modules` tersedia. Setelah itu installer memuat ulang `cdc_ncm` beserta modul yang bergantung padanya, seperti `cdc_mbim`, sehingga restart tidak diperlukan. Jika modul tidak dapat dilepas, installer meminta restart. Jalankan installer dari terminal lokal, karena koneksi USB yang sedang aktif terputus saat driver dimuat ulang.
+
+Jika installer menolak karena `/lib/modules/$(uname -r)/updates/cdc_ncm.ko` sudah ada, periksa asalnya sebelum menghapus atau menggantinya. Pastikan `modprobe` memilih modul dari DKMS:
 
 ```bash
-sudo reboot
+modinfo -n cdc_ncm
 ```
+
+Hasilnya berada di bawah `updates/dkms`.
 
 ## Atur jaringan USB pada Ubuntu
 
@@ -149,7 +152,7 @@ Pada Ubuntu, jalankan dari folder repository:
 sudo make uninstall
 ```
 
-Jika driver dimuat melalui initramfs, perbarui initramfs sesuai panduan distribusi, lalu restart untuk memilih driver bawaan. Penghapusan hanya berlaku untuk modul pengganti pada kernel yang sedang digunakan.
+Uninstaller menghapus modul dari semua kernel yang dikelola DKMS, memperbarui initramfs, lalu memuat ulang driver bawaan. Seperti installer, jalankan dari terminal lokal.
 
 Hapus alamat sementara jika masih terpasang, lalu batalkan pengaturan USB pada Mac:
 
@@ -161,4 +164,4 @@ Konfigurasi permanen, layanan SSH, dan aturan firewall dikelola secara terpisah.
 
 ## Pemeliharaan dan lisensi
 
-Periksa kebutuhan patch setelah pembaruan kernel. Driver pengganti dapat memengaruhi perangkat NCM lain dan tidak otomatis menerima perbaikan distribusi. Kode asal Linux v6.8 mempertahankan lisensi GPLv2 atau BSD 2-Clause, sedangkan materi proyek memakai GPL-2.0-only. Proyek ini independen dan tidak berafiliasi dengan Apple Inc. Apple dan Mac merupakan merek dagang Apple Inc.
+Setelah pembaruan kernel, DKMS otomatis mem-build ulang modul; hapus patch jika driver bawaan sudah cukup. Driver pengganti dapat memengaruhi perangkat NCM lain dan tidak otomatis menerima perbaikan distribusi. Kode asal Linux v6.8 mempertahankan lisensi GPLv2 atau BSD 2-Clause, sedangkan materi proyek memakai GPL-2.0-only. Proyek ini independen dan tidak berafiliasi dengan Apple Inc. Apple dan Mac merupakan merek dagang Apple Inc.
